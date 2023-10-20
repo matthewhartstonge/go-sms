@@ -1,7 +1,7 @@
 package gsm7
 
 var (
-	gsmBasicDefault = map[rune]byte{
+	basicDefault = map[rune]byte{
 		'@':  0x00,
 		'£':  0x01,
 		'$':  0x02,
@@ -138,7 +138,7 @@ var (
 		'ü': 0x7E,
 		'à': 0x7F,
 	}
-	gsmExtendedDefault = map[rune]byte{
+	extendedDefault = map[rune]byte{
 		'|':      0x40,
 		'^':      0x14,
 		'€':      0x65,
@@ -155,6 +155,6 @@ var (
 )
 
 var (
-	byteGsmDefault         = mapByteToRune(gsmBasicDefault)
-	byteGsmExtendedDefault = mapByteToRune(gsmExtendedDefault)
+	byteDefault         = mapByteToRune(basicDefault)
+	byteExtendedDefault = mapByteToRune(extendedDefault)
 )
