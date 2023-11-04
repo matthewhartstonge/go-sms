@@ -37,27 +37,57 @@ func SegmentLen(encoding Encoding, lang Language, msg string) int {
 	return segmentLen(encoding, strLen(encoding, lang, msg))
 }
 
+// strLen returns how many characters are in the message.
 func strLen(encoding Encoding, lang Language, msg string) (strLen int) {
 	if len(msg) == 0 {
 		return 0
 	}
 
-	charSet := charSetsGsm7[lang]
+	switch encoding {
+	case EncodingGSM7:
+		return gsmStrLen(charSetsGsm7[lang], msg)
+
+	case EncodingUCS2:
+		// TODO: implement UCS char counting.
+		return -1
+	}
+
+	return 0
+}
+
+// gsmStrLen returns the number of characters in the provided message based on
+// conversion to the characters in the base, extended and replacement character
+// sets.
+func gsmStrLen(charSet *CharacterSet, msg string) int {
+	msgLen := 0
 	for _, r := range bytes.Runes([]byte(msg)) {
-		if _, ok := charSet.runeBase[r]; ok {
-			strLen += 1
-			continue
-		}
-		if _, ok := charSet.runeExtended[r]; ok {
-			strLen += 2
+		if n := gsmRuneLen(charSet, r); n > 0 {
+			msgLen += n
 			continue
 		}
 		if s, ok := charSet.runeReplacements[r]; ok {
-			strLen += len(s)
+			// replacements can be multi-character, but also be from the
+			// extended set, so the counting gets... harder.
+			for _, r := range bytes.Runes([]byte(s)) {
+				msgLen += gsmRuneLen(charSet, r)
+			}
 		}
 	}
 
-	return strLen
+	return msgLen
+}
+
+// gsmRuneLen returns the number of characters a given rune counts as, returns 0
+// if not in the base or extended gsm7 character sets.
+func gsmRuneLen(charSet *CharacterSet, r rune) int {
+	if _, ok := charSet.runeBase[r]; ok {
+		return 1
+	}
+	if _, ok := charSet.runeExtended[r]; ok {
+		return 2
+	}
+
+	return 0
 }
 
 // Benchmark_segmentLen-10    	1000000000	         0.4253 ns/op	       0 B/op	       0 allocs/op
