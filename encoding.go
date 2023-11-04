@@ -3,6 +3,7 @@ package sms
 import (
 	"bytes"
 	"math"
+	"unicode/utf8"
 )
 
 const EncodingDefault = EncodingGSM7
@@ -82,11 +83,22 @@ func segmentLen(encoding Encoding, strlen int) int {
 	return int(math.Ceil(float64(strlen) / float64(segmentLength)))
 }
 
+// Validate returns whether the provided message can be successfully encoded by
+// the given encoding and language.
 func Validate(encoding Encoding, lang Language, msg string) bool {
-	if encoding == EncodingUCS2 {
-		return true
-	}
+	switch encoding {
+	case EncodingGSM7:
+		return gsm7Valid(lang, msg)
 
+	case EncodingUCS2:
+		return ucsValid(msg)
+
+	default:
+		return false
+	}
+}
+
+func gsm7Valid(lang Language, msg string) bool {
 	charSet := charSetsGsm7[lang]
 	for _, r := range bytes.Runes([]byte(msg)) {
 		if _, ok := charSet.runeBase[r]; ok {
@@ -100,6 +112,19 @@ func Validate(encoding Encoding, lang Language, msg string) bool {
 		}
 
 		return false
+	}
+
+	return true
+}
+
+func ucsValid(msg string) bool {
+	for _, r := range bytes.Runes([]byte(msg)) {
+		if l := utf8.RuneLen(r); l == -1 {
+			// If a rune returns -1, it's not valid UTF-8, therefore by the
+			// transitive properties of UCS == UTF-8 we can verify that a
+			// message cannot be valid if it can't be encoded as UTF-8.
+			return false
+		}
 	}
 
 	return true
