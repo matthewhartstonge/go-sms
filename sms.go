@@ -35,6 +35,10 @@ func (s SMS) Valid() bool {
 	return Validate(s.encoding, s.language, s.Message)
 }
 
-func (s SMS) Len() (numChars int, numSMS int) {
-	return Len(s.encoding, s.language, s.Message)
+func (s SMS) Len() int {
+	return strLen(s.encoding, s.language, s.Message)
+}
+
+func (s SMS) Segments() int {
+	return segmentLen(s.encoding, strLen(s.encoding, s.language, s.Message))
 }
