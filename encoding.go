@@ -104,8 +104,11 @@ func segmentLen(encoding Encoding, strlen int) int {
 		}
 
 	case EncodingUCS2:
+		// TODO: This requires further thinking, as characters have different
+		//  byte lengths, therefore the segment length changes based on bytes,
+		//  not characters.
 		segmentLength = LenUCS2
-		if strlen > 160 {
+		if strlen > LenUCS2Concat {
 			segmentLength = LenUCS2Concat
 		}
 	}

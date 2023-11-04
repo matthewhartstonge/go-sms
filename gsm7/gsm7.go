@@ -1,3 +1,6 @@
+// Package gsm7 enables validation, character count and the number of messages
+// that would be sent based on a provided message when encoded with the GSM.7
+// english character set.
 package gsm7
 
 // keyExists enables zero-alloc set key tracking.
